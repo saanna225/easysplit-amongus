@@ -78,7 +78,6 @@ export const SplitSummary = ({ billId, refreshKey }: SplitSummaryProps) => {
     });
 
     // Calculate subtotal for each person
-    let subtotalSum = 0;
     items.forEach((item) => {
       const itemAssignments = assignments.filter((a) => a.item_id === item.id);
       const splitCount = itemAssignments.length;
@@ -99,32 +98,31 @@ export const SplitSummary = ({ billId, refreshKey }: SplitSummaryProps) => {
       }
     });
 
-    // Calculate subtotal sum for proportional distribution
-    splitMap.forEach((split) => {
-      subtotalSum += split.total;
-    });
+    // Distribute tax and tip equally among all people
+    const peopleWithItems = Array.from(splitMap.values()).filter(s => s.total > 0);
+    const peopleCount = peopleWithItems.length;
 
-    // Distribute tax and tip proportionally
-    if (subtotalSum > 0 && (tax > 0 || tip > 0)) {
+    if (peopleCount > 0 && (tax > 0 || tip > 0)) {
+      const taxShare = tax / peopleCount;
+      const tipShare = tip / peopleCount;
+      
       splitMap.forEach((split) => {
-        const proportion = split.total / subtotalSum;
-        const taxShare = tax * proportion;
-        const tipShare = tip * proportion;
-        
-        if (taxShare > 0) {
-          split.items.push({
-            description: "Tax (proportional)",
-            share: taxShare,
-          });
-          split.total += taxShare;
-        }
-        
-        if (tipShare > 0) {
-          split.items.push({
-            description: "Tip (proportional)",
-            share: tipShare,
-          });
-          split.total += tipShare;
+        if (split.total > 0) {
+          if (taxShare > 0) {
+            split.items.push({
+              description: "Tax (split equally)",
+              share: taxShare,
+            });
+            split.total += taxShare;
+          }
+          
+          if (tipShare > 0) {
+            split.items.push({
+              description: "Tip (split equally)",
+              share: tipShare,
+            });
+            split.total += tipShare;
+          }
         }
       });
     }
