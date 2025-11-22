@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, Users } from "lucide-react";
+import { LogOut, Plus, Users, TrendingUp, Calculator as CalcIcon } from "lucide-react";
 import { PeopleManager } from "@/components/PeopleManager";
 import { BillsList } from "@/components/BillsList";
+import { Analytics } from "@/components/Analytics";
+import { Calculator } from "@/components/Calculator";
+import { SettlementReminders } from "@/components/SettlementReminders";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
@@ -55,8 +58,10 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <SettlementReminders />
+        
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
             <TabsTrigger value="bills" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
               Bills
@@ -64,6 +69,14 @@ const Dashboard = () => {
             <TabsTrigger value="people" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               People
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="calculator" className="flex items-center gap-2">
+              <CalcIcon className="w-4 h-4" />
+              Calculator
             </TabsTrigger>
           </TabsList>
 
@@ -73,6 +86,14 @@ const Dashboard = () => {
 
           <TabsContent value="people">
             <PeopleManager />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <Analytics />
+          </TabsContent>
+
+          <TabsContent value="calculator">
+            <Calculator />
           </TabsContent>
         </Tabs>
       </main>
