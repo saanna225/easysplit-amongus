@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 
 interface WeeklySpending {
@@ -10,15 +11,41 @@ interface WeeklySpending {
   total: number;
 }
 
+interface Bill {
+  id: string;
+  title: string;
+  created_at: string;
+  tax: number;
+  tip: number;
+}
+
+interface PersonSpending {
+  personId: string;
+  personName: string;
+  personColor: string;
+  total: number;
+}
+
 export const Analytics = () => {
   const [weeklyData, setWeeklyData] = useState<WeeklySpending[]>([]);
   const [totalSpending, setTotalSpending] = useState(0);
   const [loading, setLoading] = useState(true);
   const [signupDate, setSignupDate] = useState<Date | null>(null);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [selectedBills, setSelectedBills] = useState<Set<string>>(new Set());
+  const [personSpending, setPersonSpending] = useState<PersonSpending[]>([]);
 
   useEffect(() => {
     fetchAnalytics();
   }, []);
+
+  useEffect(() => {
+    if (selectedBills.size > 0) {
+      calculatePersonSpending();
+    } else {
+      setPersonSpending([]);
+    }
+  }, [selectedBills]);
 
   const fetchAnalytics = async () => {
     try {
@@ -36,23 +63,24 @@ export const Analytics = () => {
       setSignupDate(userSignupDate);
 
       // Fetch all bills
-      const { data: bills } = await supabase
+      const { data: billsData } = await supabase
         .from("bills")
-        .select("id, created_at, tax, tip")
+        .select("id, title, created_at, tax, tip")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
-      if (!bills) return;
+      if (!billsData) return;
+      setBills(billsData);
 
       // Fetch all items for these bills
-      const billIds = bills.map(b => b.id);
+      const billIds = billsData.map(b => b.id);
       const { data: items } = await supabase
         .from("items")
         .select("bill_id, price")
         .in("bill_id", billIds);
 
       // Calculate total spending per bill
-      const billTotals = bills.map(bill => {
+      const billTotals = billsData.map(bill => {
         const billItems = items?.filter(item => item.bill_id === bill.id) || [];
         const itemsTotal = billItems.reduce((sum, item) => sum + Number(item.price), 0);
         return {
@@ -107,6 +135,96 @@ export const Analytics = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const calculatePersonSpending = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const selectedBillIds = Array.from(selectedBills);
+
+      // Fetch items for selected bills
+      const { data: items } = await supabase
+        .from("items")
+        .select("id, bill_id, price")
+        .in("bill_id", selectedBillIds);
+
+      if (!items) return;
+
+      // Fetch item assignments
+      const itemIds = items.map(i => i.id);
+      const { data: assignments } = await supabase
+        .from("item_assignments")
+        .select("item_id, person_id")
+        .in("item_id", itemIds);
+
+      if (!assignments) return;
+
+      // Fetch people
+      const { data: people } = await supabase
+        .from("people")
+        .select("id, name, color")
+        .eq("user_id", user.id);
+
+      if (!people) return;
+
+      // Calculate spending per person
+      const spendingMap = new Map<string, { name: string; color: string; total: number }>();
+
+      people.forEach(person => {
+        spendingMap.set(person.id, { name: person.name, color: person.color, total: 0 });
+      });
+
+      // Calculate item costs split among assigned people
+      items.forEach(item => {
+        const itemAssignments = assignments.filter(a => a.item_id === item.id);
+        if (itemAssignments.length > 0) {
+          const costPerPerson = Number(item.price) / itemAssignments.length;
+          itemAssignments.forEach(assignment => {
+            const personData = spendingMap.get(assignment.person_id);
+            if (personData) {
+              personData.total += costPerPerson;
+            }
+          });
+        }
+      });
+
+      // Add tax and tip split equally among all people
+      const selectedBillsData = bills.filter(b => selectedBillIds.includes(b.id));
+      const totalTax = selectedBillsData.reduce((sum, b) => sum + Number(b.tax || 0), 0);
+      const totalTip = selectedBillsData.reduce((sum, b) => sum + Number(b.tip || 0), 0);
+      const taxTipPerPerson = (totalTax + totalTip) / people.length;
+
+      spendingMap.forEach(personData => {
+        personData.total += taxTipPerPerson;
+      });
+
+      const spending: PersonSpending[] = Array.from(spendingMap.entries())
+        .map(([personId, data]) => ({
+          personId,
+          personName: data.name,
+          personColor: data.color,
+          total: data.total
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      setPersonSpending(spending);
+    } catch (error) {
+      console.error("Error calculating person spending:", error);
+    }
+  };
+
+  const toggleBillSelection = (billId: string) => {
+    setSelectedBills(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(billId)) {
+        newSet.delete(billId);
+      } else {
+        newSet.add(billId);
+      }
+      return newSet;
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -126,6 +244,60 @@ export const Analytics = () => {
           </p>
         )}
       </Card>
+
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Per-Person Spending</h3>
+        {bills.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground">No bills yet. Create your first bill to get started!</p>
+          </Card>
+        ) : (
+          <>
+            <Card className="p-4 mb-4">
+              <p className="text-sm font-medium mb-3">Select bills to analyze:</p>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {bills.map((bill) => (
+                  <div key={bill.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={bill.id}
+                      checked={selectedBills.has(bill.id)}
+                      onCheckedChange={() => toggleBillSelection(bill.id)}
+                    />
+                    <label
+                      htmlFor={bill.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {bill.title} - {new Date(bill.created_at).toLocaleDateString()}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {personSpending.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Showing spending for {selectedBills.size} selected bill(s)
+                </p>
+                {personSpending.map((person) => (
+                  <Card key={person.personId} className="p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: person.personColor }}
+                        />
+                        <p className="font-semibold">{person.personName}</p>
+                      </div>
+                      <p className="text-2xl font-bold text-primary">${person.total.toFixed(2)}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       <div>
         <h3 className="text-xl font-semibold mb-4">Weekly Breakdown</h3>
