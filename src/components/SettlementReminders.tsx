@@ -63,21 +63,19 @@ export const SettlementReminders = () => {
   return (
     <div className="space-y-2 mb-6">
       {visibleReminders.map(bill => (
-        <Alert key={bill.id} className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
+        <Alert key={bill.id} className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800 relative pr-12">
           <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <AlertDescription className="flex justify-between items-center">
-            <span className="text-sm">
-              <strong>{bill.title}</strong> was uploaded {bill.daysOld} days ago. Have you settled this bill?
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDismiss(bill.id)}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <AlertDescription className="text-sm">
+            <strong>{bill.title}</strong> was uploaded {bill.daysOld} days ago. Have you settled this bill?
           </AlertDescription>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDismiss(bill.id)}
+            className="h-6 w-6 p-0 absolute top-3 right-3"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </Alert>
       ))}
     </div>

@@ -57,26 +57,30 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <SettlementReminders />
         
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4">
-            <TabsTrigger value="bills" className="flex items-center gap-2">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 md:grid-cols-4 gap-2">
+            <TabsTrigger value="bills" className="flex items-center gap-1.5">
               <Plus className="w-4 h-4" />
-              Bills
+              <span className="hidden sm:inline">Bills</span>
+              <span className="sm:hidden">Bills</span>
             </TabsTrigger>
-            <TabsTrigger value="people" className="flex items-center gap-2">
+            <TabsTrigger value="people" className="flex items-center gap-1.5">
               <Users className="w-4 h-4" />
-              People
+              <span className="hidden sm:inline">People</span>
+              <span className="sm:hidden">People</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="analytics" className="flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="calculator" className="flex items-center gap-2">
+            <TabsTrigger value="calculator" className="flex items-center gap-1.5">
               <CalcIcon className="w-4 h-4" />
-              Calculator
+              <span className="hidden sm:inline">Calculator</span>
+              <span className="sm:hidden">Calc</span>
             </TabsTrigger>
           </TabsList>
 
