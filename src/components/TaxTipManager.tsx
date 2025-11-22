@@ -17,10 +17,6 @@ export const TaxTipManager = ({ billId, onUpdate }: TaxTipManagerProps) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchTaxTip();
-  }, [billId]);
-
   const fetchTaxTip = async () => {
     const { data, error } = await supabase
       .from("bills")
@@ -34,6 +30,10 @@ export const TaxTipManager = ({ billId, onUpdate }: TaxTipManagerProps) => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchTaxTip();
+  }, [billId]);
 
   const updateTaxTip = async () => {
     const taxValue = parseFloat(tax) || 0;
