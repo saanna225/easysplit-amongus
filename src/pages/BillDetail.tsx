@@ -73,6 +73,20 @@ export const BillDetail = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-6">
+        <Card className="p-6 bg-warning/10 border-warning/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold mb-1">Add People First</h3>
+              <p className="text-sm text-muted-foreground">
+                Add people in the People tab to assign items and split costs
+              </p>
+            </div>
+            <Button onClick={() => navigate("/?tab=people")} variant="default">
+              Add People
+            </Button>
+          </div>
+        </Card>
+
         {!bill.receipt_image_url && !showUploader && (
           <Card className="p-6">
             <div className="flex items-center justify-between">
