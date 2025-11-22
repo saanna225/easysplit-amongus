@@ -32,19 +32,20 @@ interface Split {
 
 interface SplitSummaryProps {
   billId: string;
+  refreshKey?: number;
 }
 
-export const SplitSummary = ({ billId }: SplitSummaryProps) => {
+export const SplitSummary = ({ billId, refreshKey }: SplitSummaryProps) => {
   const [splits, setSplits] = useState<Split[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     calculateSplits();
-  }, [billId]);
+  }, [billId, refreshKey]);
 
   const calculateSplits = async () => {
-    const [itemsRes, peopleRes, assignmentsRes] = await Promise.all([
+    const [itemsRes, peopleRes, assignmentsRes, billRes] = await Promise.all([
       supabase.from("items").select("*").eq("bill_id", billId),
       supabase.from("people").select("*"),
       supabase
@@ -54,11 +55,14 @@ export const SplitSummary = ({ billId }: SplitSummaryProps) => {
           "item_id",
           (await supabase.from("items").select("id").eq("bill_id", billId)).data?.map((i) => i.id) || []
         ),
+      supabase.from("bills").select("tax, tip").eq("id", billId).single(),
     ]);
 
     const items: Item[] = itemsRes.data || [];
     const people: Person[] = peopleRes.data || [];
     const assignments: ItemAssignment[] = assignmentsRes.data || [];
+    const tax = billRes.data?.tax || 0;
+    const tip = billRes.data?.tip || 0;
 
     // Calculate splits
     const splitMap = new Map<string, Split>();
@@ -73,6 +77,8 @@ export const SplitSummary = ({ billId }: SplitSummaryProps) => {
       });
     });
 
+    // Calculate subtotal for each person
+    let subtotalSum = 0;
     items.forEach((item) => {
       const itemAssignments = assignments.filter((a) => a.item_id === item.id);
       const splitCount = itemAssignments.length;
@@ -92,6 +98,36 @@ export const SplitSummary = ({ billId }: SplitSummaryProps) => {
         });
       }
     });
+
+    // Calculate subtotal sum for proportional distribution
+    splitMap.forEach((split) => {
+      subtotalSum += split.total;
+    });
+
+    // Distribute tax and tip proportionally
+    if (subtotalSum > 0 && (tax > 0 || tip > 0)) {
+      splitMap.forEach((split) => {
+        const proportion = split.total / subtotalSum;
+        const taxShare = tax * proportion;
+        const tipShare = tip * proportion;
+        
+        if (taxShare > 0) {
+          split.items.push({
+            description: "Tax (proportional)",
+            share: taxShare,
+          });
+          split.total += taxShare;
+        }
+        
+        if (tipShare > 0) {
+          split.items.push({
+            description: "Tip (proportional)",
+            share: tipShare,
+          });
+          split.total += tipShare;
+        }
+      });
+    }
 
     setSplits(Array.from(splitMap.values()).filter((s) => s.total > 0));
     setLoading(false);

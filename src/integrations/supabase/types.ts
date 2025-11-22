@@ -20,6 +20,8 @@ export type Database = {
           id: string
           raw_ocr_text: string | null
           receipt_image_url: string | null
+          tax: number | null
+          tip: number | null
           title: string
           user_id: string
         }
@@ -28,6 +30,8 @@ export type Database = {
           id?: string
           raw_ocr_text?: string | null
           receipt_image_url?: string | null
+          tax?: number | null
+          tip?: number | null
           title: string
           user_id: string
         }
@@ -36,6 +40,8 @@ export type Database = {
           id?: string
           raw_ocr_text?: string | null
           receipt_image_url?: string | null
+          tax?: number | null
+          tip?: number | null
           title?: string
           user_id?: string
         }
