@@ -72,47 +72,108 @@ export const TaxTipManager = ({ billId, onUpdate }: TaxTipManagerProps) => {
     return <div className="text-center text-muted-foreground">Loading...</div>;
   }
 
+  const calculateTipPercentage = (percentage: number, subtotal: number) => {
+    const calculatedTip = (subtotal * percentage) / 100;
+    setTip(calculatedTip.toFixed(2));
+  };
+
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <DollarSign className="w-5 h-5 text-primary" />
-        <h3 className="text-lg font-semibold">Tax & Tip</h3>
+    <Card className="p-6 bg-gradient-to-br from-card to-secondary/20 border-border/50 shadow-lg">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <DollarSign className="w-5 h-5 text-primary" />
+        </div>
+        <h3 className="text-xl font-bold">Tax & Tip</h3>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
-          <label className="text-sm text-muted-foreground mb-1 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Tax Amount
           </label>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={tax}
-              onChange={(e) => setTax(e.target.value)}
-              className="flex-1"
-            />
-          </div>
+          <Input
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            value={tax}
+            onChange={(e) => setTax(e.target.value)}
+            className="text-lg h-12"
+          />
         </div>
 
         <div>
-          <label className="text-sm text-muted-foreground mb-1 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Tip Amount
           </label>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={tip}
-              onChange={(e) => setTip(e.target.value)}
+          <Input
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            value={tip}
+            onChange={(e) => setTip(e.target.value)}
+            className="text-lg h-12"
+          />
+          
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Calculate tip based on items total
+                const fetchSubtotal = async () => {
+                  const { data } = await supabase
+                    .from("items")
+                    .select("price")
+                    .eq("bill_id", billId);
+                  const subtotal = data?.reduce((sum, item) => sum + item.price, 0) || 0;
+                  calculateTipPercentage(15, subtotal);
+                };
+                fetchSubtotal();
+              }}
               className="flex-1"
-            />
+            >
+              15%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const fetchSubtotal = async () => {
+                  const { data } = await supabase
+                    .from("items")
+                    .select("price")
+                    .eq("bill_id", billId);
+                  const subtotal = data?.reduce((sum, item) => sum + item.price, 0) || 0;
+                  calculateTipPercentage(18, subtotal);
+                };
+                fetchSubtotal();
+              }}
+              className="flex-1"
+            >
+              18%
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const fetchSubtotal = async () => {
+                  const { data } = await supabase
+                    .from("items")
+                    .select("price")
+                    .eq("bill_id", billId);
+                  const subtotal = data?.reduce((sum, item) => sum + item.price, 0) || 0;
+                  calculateTipPercentage(20, subtotal);
+                };
+                fetchSubtotal();
+              }}
+              className="flex-1"
+            >
+              20%
+            </Button>
           </div>
         </div>
 
-        <Button onClick={updateTaxTip} className="w-full">
+        <Button onClick={updateTaxTip} className="w-full h-12 text-base font-semibold shadow-md">
           Update Tax & Tip
         </Button>
       </div>

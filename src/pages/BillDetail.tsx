@@ -62,28 +62,39 @@ export const BillDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-5 flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/")}
+            className="hover:bg-primary/10"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h1 className="text-xl font-bold">{bill.title}</h1>
-            <p className="text-sm text-muted-foreground">Split this bill fairly</p>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {bill.title}
+            </h1>
+            <p className="text-sm text-muted-foreground">Split this bill fairly among friends</p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-6">
-        <Card className="p-6 bg-warning/10 border-warning/20">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <Card className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold mb-1">Add People First</h3>
+              <h3 className="font-bold text-lg mb-1">👥 Add People First</h3>
               <p className="text-sm text-muted-foreground">
-                Add people in the People tab to assign items and split costs
+                Add roommates or friends to assign items and calculate split costs
               </p>
             </div>
-            <Button onClick={() => navigate("/?tab=people")} variant="default">
+            <Button 
+              onClick={() => navigate("/?tab=people")} 
+              className="shadow-md"
+              size="lg"
+            >
               Add People
             </Button>
           </div>

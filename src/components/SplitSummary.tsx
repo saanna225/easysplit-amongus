@@ -177,11 +177,16 @@ export const SplitSummary = ({ billId, refreshKey }: SplitSummaryProps) => {
   const grandTotal = splits.reduce((sum, split) => sum + split.total, 0);
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-gradient-to-br from-card to-secondary/20 shadow-lg">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Split Summary</h3>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-success" />
+          </div>
+          <h3 className="text-xl font-bold">Split Summary</h3>
+        </div>
         {splits.length > 0 && (
-          <Button onClick={exportToCSV} variant="outline" size="sm">
+          <Button onClick={exportToCSV} variant="outline" size="sm" className="shadow-sm">
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </Button>
@@ -189,50 +194,54 @@ export const SplitSummary = ({ billId, refreshKey }: SplitSummaryProps) => {
       </div>
 
       {splits.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">
-          <DollarSign className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>No splits calculated yet</p>
-          <p className="text-sm mt-1">Assign people to items to see splits</p>
+        <div className="text-center text-muted-foreground py-12">
+          <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+            <DollarSign className="w-8 h-8 opacity-50" />
+          </div>
+          <p className="font-medium">No splits calculated yet</p>
+          <p className="text-sm mt-1">Assign people to items to see the breakdown</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="bg-primary/10 rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Total Bill</p>
-            <p className="text-3xl font-bold text-primary">${grandTotal.toFixed(2)}</p>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6 text-center border border-primary/20 shadow-md">
+            <p className="text-sm text-muted-foreground mb-2">Total Bill Amount</p>
+            <p className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              ${grandTotal.toFixed(2)}
+            </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {splits.map((split) => (
               <div
                 key={split.personId}
-                className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
+                className="border border-border/50 rounded-xl p-5 hover:shadow-lg transition-all duration-200 bg-card"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md"
                       style={{ backgroundColor: split.personColor }}
                     >
                       {split.personName[0].toUpperCase()}
                     </div>
-                    <span className="font-medium">{split.personName}</span>
+                    <span className="font-semibold text-lg">{split.personName}</span>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Owes</p>
-                    <p className="text-2xl font-bold text-primary">
+                    <p className="text-xs text-muted-foreground mb-1">Owes</p>
+                    <p className="text-3xl font-bold text-primary">
                       ${split.total.toFixed(2)}
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-3 border-t border-border">
+                <div className="space-y-2 pt-4 border-t border-border/50">
                   {split.items.map((item, index) => (
                     <div
                       key={index}
-                      className="flex justify-between text-sm"
+                      className="flex justify-between text-sm py-1"
                     >
                       <span className="text-muted-foreground">{item.description}</span>
-                      <span className="font-medium">${item.share.toFixed(2)}</span>
+                      <span className="font-semibold">${item.share.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>

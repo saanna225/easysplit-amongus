@@ -138,14 +138,15 @@ export const ItemsList = ({ billId, onAssignmentChange }: ItemsListProps) => {
 
   return (
     <div className="space-y-6">
-      <Card className="p-6">
-        <h3 className="font-semibold mb-4">Add Item</h3>
+      <Card className="p-6 bg-gradient-to-br from-card to-secondary/20 shadow-lg">
+        <h3 className="font-bold text-lg mb-4">➕ Add Item</h3>
         <div className="flex gap-2">
           <Input
             placeholder="Item description"
             value={newItemDesc}
             onChange={(e) => setNewItemDesc(e.target.value)}
-            className="flex-1"
+            className="flex-1 h-12"
+            onKeyPress={(e) => e.key === "Enter" && addItem()}
           />
           <Input
             placeholder="Price"
@@ -153,10 +154,11 @@ export const ItemsList = ({ billId, onAssignmentChange }: ItemsListProps) => {
             step="0.01"
             value={newItemPrice}
             onChange={(e) => setNewItemPrice(e.target.value)}
-            className="w-24"
+            className="w-32 h-12"
+            onKeyPress={(e) => e.key === "Enter" && addItem()}
           />
-          <Button onClick={addItem}>
-            <Plus className="w-4 h-4" />
+          <Button onClick={addItem} size="lg" className="shadow-md">
+            <Plus className="w-5 h-5" />
           </Button>
         </div>
       </Card>
@@ -178,11 +180,11 @@ export const ItemsList = ({ billId, onAssignmentChange }: ItemsListProps) => {
           )}
           
           {items.map((item) => (
-            <Card key={item.id} className="p-4">
-              <div className="flex items-start justify-between mb-3">
+            <Card key={item.id} className="p-5 hover:shadow-lg transition-all duration-200 bg-card border-border/50">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h4 className="font-medium">{item.description}</h4>
-                  <p className="text-lg font-semibold text-primary">
+                  <h4 className="font-semibold text-lg">{item.description}</h4>
+                  <p className="text-2xl font-bold text-primary mt-1">
                     ${item.price.toFixed(2)}
                   </p>
                 </div>
@@ -190,6 +192,7 @@ export const ItemsList = ({ billId, onAssignmentChange }: ItemsListProps) => {
                   variant="ghost"
                   size="icon"
                   onClick={() => deleteItem(item.id)}
+                  className="hover:bg-destructive/10"
                 >
                   <Trash2 className="w-4 h-4 text-destructive" />
                 </Button>
