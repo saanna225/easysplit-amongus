@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ReceiptUploader } from "@/components/ReceiptUploader";
 import { ItemsList } from "@/components/ItemsList";
 import { SplitSummary } from "@/components/SplitSummary";
+import { TaxTipManager } from "@/components/TaxTipManager";
 
 interface Bill {
   id: string;
@@ -128,7 +129,9 @@ export const BillDetail = () => {
 
         <ItemsList billId={billId!} onAssignmentChange={() => setRefreshKey(prev => prev + 1)} />
 
-        <SplitSummary billId={billId!} key={refreshKey} />
+        <TaxTipManager billId={billId!} onUpdate={() => setRefreshKey(prev => prev + 1)} />
+
+        <SplitSummary billId={billId!} refreshKey={refreshKey} />
       </main>
     </div>
   );
