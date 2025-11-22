@@ -22,6 +22,7 @@ export const BillDetail = () => {
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [showUploader, setShowUploader] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -125,9 +126,9 @@ export const BillDetail = () => {
           </Card>
         )}
 
-        <ItemsList billId={billId!} />
+        <ItemsList billId={billId!} onAssignmentChange={() => setRefreshKey(prev => prev + 1)} />
 
-        <SplitSummary billId={billId!} />
+        <SplitSummary billId={billId!} key={refreshKey} />
       </main>
     </div>
   );

@@ -26,9 +26,10 @@ interface ItemAssignment {
 
 interface ItemsListProps {
   billId: string;
+  onAssignmentChange?: () => void;
 }
 
-export const ItemsList = ({ billId }: ItemsListProps) => {
+export const ItemsList = ({ billId, onAssignmentChange }: ItemsListProps) => {
   const [items, setItems] = useState<Item[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [assignments, setAssignments] = useState<ItemAssignment[]>([]);
@@ -122,6 +123,7 @@ export const ItemsList = ({ billId }: ItemsListProps) => {
     }
 
     fetchData();
+    onAssignmentChange?.();
   };
 
   const isAssigned = (itemId: string, personId: string) => {
